@@ -19,16 +19,8 @@ const connectMongoDB = async () => {
     }
 }
 
-dbc = connectMongoDB()
+connectMongoDB()
 
-console.log(dbc)
-
-// db = dbc.db("gunpladb")
-// const collection = db.collection('review')
-// collection.find({}).toArray((err, docs) => {
-//     assert.equal(err, null)
-//     console.log(docs)
-// })
 //----------------------------
 
 const memoSchema = new mongoose.Schema({
