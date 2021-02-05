@@ -1,13 +1,71 @@
-// 원본 출처: https://www.apollographql.com/docs/apollo-server/getting-started/
-
 const { ApolloServer, gql } = require('apollo-server');
+const mongoose = require('mongoose');
 
+
+mongoose.Promise = global.Promise;
+
+const connectMongoDB = async () => {
+    try {
+        res = await mongoose.connect("mongodb://localhost/gunpladb", 
+                {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true 
+                })
+        console.log('Successfully connected to mongodb');
+        return res
+    } catch (err) {
+        console.error(err)  
+        return null
+    }
+}
+
+dbc = connectMongoDB()
+
+console.log(dbc)
+
+// db = dbc.db("gunpladb")
+// const collection = db.collection('review')
+// collection.find({}).toArray((err, docs) => {
+//     assert.equal(err, null)
+//     console.log(docs)
+// })
+//----------------------------
+
+const memoSchema = new mongoose.Schema({
+    grade: String,
+    description: String    
+})
+
+const Memo = mongoose.model('Memo', memoSchema)
+
+
+const reviewSchema = new mongoose.Schema({
+    name: String,
+    model: String,
+    manufacturer: String,
+    height: String,
+    weight: String,
+    memo: [memoSchema]    
+})
+
+const Review = mongoose.model('Review', reviewSchema, 'review')
+
+
+//----------------------------
 // NOTE: 따옴표 (') 아니고 backtick (`) 주의
 const typeDefs = gql`
-  # 아직 MongoDB를 연결하지 않아서 dummy 데이터 사용
+  type Memo {
+    grade: String
+    description: String
+  }
+
   type Review {
     name: String
-    description: String
+    model: String
+    manufacturer: String
+    height: Float
+    weight: Float
+    memo: [Memo]
   }
 
   # Review 들의 배열 반환
@@ -16,26 +74,21 @@ const typeDefs = gql`
   }
 `;
 
-const gunpla = [
-  {
-    name: '자쿠II',
-    description: 'SD지만 육중함은 그대로',
-  },
-  {
-    name: '건담 5호기',
-    description: '기대하지 않았는데 만족도가 높았던 킷',
-  },
-  {
-    name: '스트라이크건담',
-    description: '스트라이크 건담은 모든 등급이 다 잘 뽑힌듯',
-  },
-];
-
 const resolvers = {
   Query: {
-    reviews: () => gunpla,
+    reviews: async () => {
+        try {
+            res = await Review.find({})
+            console.log(res)
+            return res
+        } catch (err) {
+            console.log(err)
+        }
+    },
   },
 };
+
+
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
